@@ -59,9 +59,10 @@
         <el-main class="myMain">
             <el-steps :active="1">
                 <el-step title="填写解密信息" description="填写IMEI以及微信UIN"></el-step>
-                <el-step title="上传数据库" description="这是一段很长很长很长的描述性文字"></el-step>
-                <el-step title="选择导出类型" description="这是一段很长很长很长的描述性文字"></el-step>
-                <el-step title="导出完成" description="这是一段很长很长很长的描述性文字"></el-step>
+                <el-step title="上传数据库" description="上传未解密的EnMicroMsg.db"></el-step>
+                <el-step title="选择导出表" description="选择需要导出的数据库表"></el-step>
+                <el-step title="选择导出格式" description="选择导出格式"></el-step>
+                <el-step title="导出完成" description="导出完成，浏览器将自动下载导出文件"></el-step>
             </el-steps>
             <router-view></router-view>
             <div class="buttonWarp">

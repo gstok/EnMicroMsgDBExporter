@@ -33,6 +33,8 @@
 </template>
 
 <script>
+    import md5 from "blueimp-md5";
+
     export default {
         name: "viewInput",
         props: {
@@ -53,13 +55,20 @@
             };
         },
         watch: {
-
+            autoKey (nv) {
+                console.log(nv);
+            },
         },
         computed: {
             //#region 常量计算属性
             //#endregion
 
             //#region 数据转换计算属性
+                autoKey () {
+                    let text = `${ this.imei }${ this.uin }`;
+                    let md5Text = md5(text);
+                    return md5Text.substring(0, 7).toLowerCase();
+                },
             //#endregion
 
             //#region 样式计算属性
