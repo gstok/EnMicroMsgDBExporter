@@ -1,26 +1,21 @@
-# EnMicroMsgDBExporter
+# 微信数据库EnMicroMsg.db导出工具
 
-## Project setup
+## 依赖安装
 ```
 yarn install
 ```
 
-### Compiles and hot-reloads for development
+### 运行项目
 ```
 yarn run serve
 ```
 
-### Compiles and minifies for production
+### 运行项目后端
 ```
-yarn run build
-```
-
-### Run your tests
-```
-yarn run test
+yarn run server
 ```
 
-### Lints and fixes files
+### 运行项目前端
 ```
-yarn run lint
+yarn run website
 ```
