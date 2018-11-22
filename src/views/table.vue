@@ -7,6 +7,7 @@
         align-content: flex-start;
         flex-wrap: wrap;
         padding: 20px;
+        overflow-y: auto;
     }
 
     .myCard {
@@ -14,6 +15,21 @@
         margin-bottom: 20px;
         margin-right: 10px;
         margin-bottom: 10px;
+    }
+    .tableTitle {
+        display: flex;
+        justify-content: space-between;
+    }
+    .tableTitle a {
+        font-size: 14px;
+        font-weight: bold;
+        color: #409EFF;
+        text-decoration: none;
+    }
+    .tableSql {
+        height: 120px;
+        overflow-y: auto;
+        font-size: 12px;
     }
 </style>
 
@@ -24,9 +40,16 @@
 
 <template>
     <div class="viewTable">
-        <el-card v-for="item in 10" :key="item" class="myCard">
-            <div slot="header">
-                <span>卡片名称</span>
+        <el-card
+            v-for="(table, index) in tables"
+            :key="index"
+            class="myCard">
+            <div slot="header" class="tableTitle">
+                <router-link :to="`/table/${ table.name }`">{{ table.name }}</router-link>
+                <el-checkbox v-model="table.selected"></el-checkbox>
+            </div>
+            <div class="tableSql">
+                {{ table.sql }}
             </div>
         </el-card>
     </div>
@@ -44,6 +67,7 @@
                 //#endregion
 
                 //#region 页面内容绑定数据
+                    tables: [],
                 //#endregion
 
                 //#region 页面样式绑定数据
@@ -85,8 +109,9 @@
         created () {
 
         },
-        mounted () {
-
+        async mounted () {
+            let result = await this.$fetch("/api/table");
+            this.tables = result.data;
         },
         components: {
 
