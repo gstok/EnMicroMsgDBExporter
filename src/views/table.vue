@@ -1,35 +1,40 @@
 
 <!--局部样式-->
 <style scoped>
-    .viewUpload {
+    .viewTable {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-content: flex-start;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+    .myCard {
+        width: 240px;
+        margin-bottom: 20px;
+        margin-right: 10px;
+        margin-bottom: 10px;
     }
 </style>
 
 <!--全局局部覆盖样式-->
 <style>
-    .viewUpload .el-upload__tip {
-        text-align: center;
-    }
+
 </style>
 
 <template>
-    <div class="viewUpload">
-        <el-upload
-            drag
-            action="/api/upload">
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将数据库拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">请上传不超过1GB的数据库文件</div>
-        </el-upload>
+    <div class="viewTable">
+        <el-card v-for="item in 10" :key="item" class="myCard">
+            <div slot="header">
+                <span>卡片名称</span>
+            </div>
+        </el-card>
     </div>
 </template>
 
 <script>
     export default {
-        name: "viewUpload",
+        name: "viewTable",
         props: {
 
         },

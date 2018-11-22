@@ -16,10 +16,6 @@
         align-items: center;
         color: white;
     }
-    .myHeader > span {
-        font-size: 20px;
-        font-weight: bold;
-    }
     .myHeader > a {
         font-size: 12px;
         color: white;
@@ -33,6 +29,29 @@
     .buttonWarp {
         display: flex;
         justify-content: space-between;
+    }
+    .appTitle {
+        display: flex;
+        align-items: center;
+    }
+    .appTitle > span {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .appTitle > i {
+        margin-top: -7px;
+        font-size: 34px;
+        margin-right: 12px;
+    }
+    .appTitle > span {
+        font-size: 18px;
+    }
+    .likeMe {
+        display: flex;
+        align-items: center;
+    }
+    .likeMe i {
+        margin-right: 4px;
     }
 </style>
 
@@ -49,11 +68,16 @@
 <template>
     <el-container class="app">
         <el-header class="myHeader">
-            <span>EnMicroMsgDBExporter</span>
+            <a class="appTitle" href="/">
+                <i class="icon icon-mengbanhangkonghangtian-wangyuanjingtelescope"></i>
+                <span>EnMicroMsgDBExporter</span>
+            </a>
             <a
+                class="likeMe"
                 href="https://github.com/gstok/EnMicroMsgDBExporter"
                 target="_blank">
-                给我点赞
+                <i class="icon icon-githublogo"></i>
+                <span>给我点赞</span>
             </a>
         </el-header>
         <el-main class="myMain">

@@ -18,6 +18,11 @@ export default new Router({
             component: () => import("./views/upload"),
         },
         {
+            path: "/table",
+            name: "viewTable",
+            component: () => import("./views/table"),
+        },
+        {
             path: "/type",
             name: "viewType",
             component: () => import("./views/type"),
