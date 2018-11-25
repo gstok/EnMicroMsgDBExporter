@@ -106,12 +106,15 @@
             //#region 其他方法
             //#endregion
         },
-        created () {
-
-        },
-        async mounted () {
-            let result = await this.$fetch("/api/table");
+        async created () {
+            this.dbKey = this.$route.query.db;
+            let result = await this.$fetch("/api/table", {
+                db: this.dbKey,
+            });
             this.tables = result.data;
+        },
+        mounted () {
+
         },
         components: {
 

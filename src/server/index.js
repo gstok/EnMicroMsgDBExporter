@@ -8,6 +8,7 @@ const Sqlite3 = require('sqlite3').verbose();
 const Moment = require("moment");
 const colors = require("colors");
 const fs = require("fs");
+const UUID = require("uuid/v4");
 
 //服务端端口
 const serverPort = 10241;
@@ -51,6 +52,22 @@ function select (db, sql) {
     });
 }
 
+function run (db, sql) {
+    let args = Object.entries(arguments)
+                     .map(item => item[1])
+                     .slice(2);
+    return new Promise((resolve, reject) => {
+        db.run(sql, args, (err, result) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(result);
+            }
+        });
+    });
+}
+
 //获取数据库内所有表
 async function getTableList (db) {
     return select(db, "select * from sqlite_master where type = 'table' order by name");
@@ -61,20 +78,42 @@ async function pullTable (db, table) {
     return select(db, `select * from ${ table } limit 1000`);
 }
 
+
+function decrypt (db, pwd) {
+    return new Promise((resolve, reject) => {
+        try {
+            db.serialize(async () => {
+                await run(db, `PRAGMA key = '${ pwd }';`);
+                await run(db, "PRAGMA cipher_migrate;");
+                resolve();
+            });
+        }
+        catch (e) {
+            reject(e);
+        }
+    });
+}
+
+
 //主函数
 async function main () {
     try {
         let app = new Koa();
         let router = new KoaRouter();
-        let db = new Sqlite3.Database("wechat.db");
-        db.serialize(function() {
-            db.run("PRAGMA key = 'eea9ad9';");
-            db.run("PRAGMA cipher_migrate;");
-        });
+
         router.get("/api/table", async (ctx, next) => {
             try {
-                let code = 200;
+                let dbKey = ctx.request.query.db;
+                let fileName = dbKey;
+                let filePath = `./uploads/${ fileName }.db`;
+                let pwd = dbKey.substring(0, 7);
+
+                let db = new Sqlite3.Database(filePath);
+                await run(db, `PRAGMA key = '${ pwd }';`);
                 let list = await getTableList(db);
+                db.close();
+
+                let code = 200;
                 ctx.status = code;
                 ctx.body = {
                     code: code,
@@ -104,10 +143,26 @@ async function main () {
 
         router.post("/api/upload", async (ctx, next) => {
             const file = ctx.request.files.file;
+            let pwd = ctx.request.body.pwd;
+            let fileName = `${ pwd }${ Number(new Date()) }`;
+            let filePath = `./uploads/${ fileName }.db`;
             const reader = fs.createReadStream(file.path);
-            const stream = fs.createWriteStream(`./uploads/${ file.name }`);
+            const stream = fs.createWriteStream(filePath);
             reader.pipe(stream);
-            ctx.body = "ok";
+
+            let db = new Sqlite3.Database(filePath);
+            await decrypt(db, pwd);
+            db.close();
+
+            let code = 200;
+            ctx.status = code;
+            ctx.body = {
+                code: code,
+                data: {
+                    dbkey: fileName,
+                },
+                msg: "查询成功",
+            };
         });
 
         router.post("/api/key", async (ctx, next) => {

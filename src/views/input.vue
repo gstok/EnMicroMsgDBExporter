@@ -55,9 +55,7 @@
             };
         },
         watch: {
-            autoKey (nv) {
-                console.log(nv);
-            },
+
         },
         computed: {
             //#region 常量计算属性
@@ -76,6 +74,13 @@
         },
         methods: {
             //#region 页面事件方法
+                handleBackClick () {
+
+                },
+
+                handleNextClick () {
+                    this.$router.push(`/upload?pwd=${ this.autoKey }`);
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -97,7 +102,8 @@
 
         },
         mounted () {
-
+            BUS.on("back", this.handleBackClick);
+            BUS.on("next", this.handleNextClick);
         },
         components: {
 

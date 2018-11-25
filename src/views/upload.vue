@@ -19,7 +19,9 @@
     <div class="viewUpload">
         <el-upload
             drag
-            action="/api/upload">
+            action="/api/upload"
+            :data="autoUploadData"
+            :on-success="handleUploadSuccess">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将数据库拖到此处，或<em>点击上传</em></div>
             <div class="el-upload__tip" slot="tip">请上传不超过1GB的数据库文件</div>
@@ -39,6 +41,7 @@
                 //#endregion
 
                 //#region 页面内容绑定数据
+                    pwd: "",
                 //#endregion
 
                 //#region 页面样式绑定数据
@@ -53,6 +56,11 @@
             //#endregion
 
             //#region 数据转换计算属性
+                autoUploadData () {
+                    return {
+                        pwd: this.pwd,
+                    };
+                },
             //#endregion
 
             //#region 样式计算属性
@@ -60,6 +68,14 @@
         },
         methods: {
             //#region 页面事件方法
+                handleUploadSuccess (response, file, fileList) {
+                    if (response.code == 200) {
+                        let dbKey = response.data.dbkey;
+                        if (dbKey) {
+                            this.$router.push(`/table?db=${ dbKey }`);
+                        }
+                    }
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -78,7 +94,7 @@
             //#endregion
         },
         created () {
-
+            this.pwd = this.$route.query.pwd;
         },
         mounted () {
 

@@ -90,8 +90,8 @@
             </el-steps>
             <router-view></router-view>
             <div class="buttonWarp">
-                <el-button>上一步</el-button>
-                <el-button>下一步</el-button>
+                <el-button @click="handleBackClick">上一步</el-button>
+                <el-button @click="handleNextClick">下一步</el-button>
             </div>
         </el-main>
     </el-container>
@@ -130,6 +130,14 @@
         },
         methods: {
             //#region 页面事件方法
+                handleBackClick () {
+                    BUS.emit("back");
+                },
+
+                handleNextClick () {
+                    console.log(123);
+                    BUS.emit("next");
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -151,7 +159,7 @@
 
         },
         mounted () {
-
+            console.log(BUS);
         },
         components: {
 

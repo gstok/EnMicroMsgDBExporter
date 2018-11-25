@@ -8,6 +8,9 @@ module.exports = {
                 jQuery: "jquery",
                 $: "jquery",
             }),
+            new webpack.ProvidePlugin({
+                BUS: "@/bus.js"
+            }),
         ],
     },
     devServer: {
