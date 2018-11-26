@@ -17,8 +17,9 @@
     <div class="viewType">
         <label>导出类型：</label>
         <el-select v-model="type" placeholder="请选择导出类型">
-            <el-option label="Excel" value="excel"></el-option>
-            <el-option label="JSON" value="json"></el-option>
+            <el-option label="Excel" value="EXCEL"></el-option>
+            <el-option label="SQL" value="SQL"></el-option>
+            <el-option label="JSON" value="JSON"></el-option>
         </el-select>
     </div>
 </template>
@@ -35,7 +36,7 @@
                 //#endregion
 
                 //#region 页面内容绑定数据
-                    type: "excel",
+                    type: "EXCEL",
                 //#endregion
 
                 //#region 页面样式绑定数据

@@ -135,7 +135,6 @@
                 },
 
                 handleNextClick () {
-                    console.log(123);
                     BUS.emit("next");
                 },
             //#endregion
@@ -159,7 +158,7 @@
 
         },
         mounted () {
-            console.log(BUS);
+
         },
         components: {
 
