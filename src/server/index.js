@@ -3,12 +3,18 @@ const Koa = require("koa");
 const KoaRouter = require("koa-router");
 const KoaStatic = require("koa-static");
 const KoaBody = require("koa-body");
+const KoaSend = require("koa-send");
 const KoaLogger = require("koa-logger");
 const Sqlite3 = require('sqlite3').verbose();
 const Moment = require("moment");
 const colors = require("colors");
 const fs = require("fs");
 const UUID = require("uuid/v4");
+const Archiver = require("archiver");
+const stream = require("stream");
+
+
+
 
 //服务端端口
 const serverPort = 10241;
@@ -103,6 +109,46 @@ function dbSession(dbKey, session = () => { }) {
     });
 }
 
+async function exportJSON (dbKey, tableNameList) {
+
+    let tempPath = `./temp/${ dbKey }`;
+    let result = fs.existsSync(tempPath);
+    if (!result) {
+        fs.mkdirSync(tempPath);
+    }
+
+    let tempJSONPath = `./temp/${ dbKey }/JSON`;
+    result = fs.existsSync(tempJSONPath);
+    if (!result) {
+        fs.mkdirSync(tempJSONPath);
+    }
+
+    let files = fs.readdirSync(tempJSONPath);
+    files.forEach(fileName => {
+        fs.unlinkSync(`${ tempJSONPath }/${ fileName }`);
+    });
+
+    await dbSession(dbKey, async db => {
+        for (let i = 0; i < tableNameList.length; ++i) {
+            let name = tableNameList[i];
+            let list = await select(db, `select * from ${ name }`);
+            let jsonStr = JSON.stringify(list, null, 4);
+            fs.writeFileSync(`${ tempJSONPath }/${ name }.json`, jsonStr);
+        }
+    });
+
+    let archive = Archiver("zip", {
+        zlib: {
+            level: 9
+        },
+    });
+    archive.directory(tempJSONPath, false);
+    let zipPath = `${ tempJSONPath }/JSON.zip`;
+    let output = fs.createWriteStream(zipPath);
+    archive.pipe(output);
+    archive.finalize();
+    return zipPath;
+}
 
 async function decrypt (dbKey) {
     await dbSession(dbKey, async db => {
@@ -190,6 +236,11 @@ async function main () {
 
         router.post("/api/key", async (ctx, next) => {
             
+        });
+
+        router.get("/api/export", async (ctx, next) => {
+            let zipPath = await exportJSON("eea9ad91543310727622", ["message", "userinfo", "userinfo2"]);
+            await KoaSend(ctx, zipPath);
         });
 
         app
