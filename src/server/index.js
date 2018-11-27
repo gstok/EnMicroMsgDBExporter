@@ -69,7 +69,7 @@ function run (db, sql) {
 }
 
 //获取数据库内所有表
-async function getTableList (db) {
+async function getTableList2 (db) {
     return select(db, "select * from sqlite_master where type = 'table' order by name");
 }
 
@@ -79,19 +79,43 @@ async function pullTable (db, table) {
 }
 
 
-function decrypt (db, pwd) {
+
+//数据库会话
+function dbSession(dbKey, session = () => { }) {
     return new Promise((resolve, reject) => {
         try {
+            let dbName = dbKey;
+            let dbPwd = dbKey.substring(0, 7);
+            let dbPath = `./uploads/${ dbName }.db`;
+            let db = new Sqlite3.Database(dbPath);
             db.serialize(async () => {
-                await run(db, `PRAGMA key = '${ pwd }';`);
-                await run(db, "PRAGMA cipher_migrate;");
-                resolve();
+                await run(db, `PRAGMA key = '${ dbPwd }';`);
+                await session(db);
+                setTimeout(() => {
+                    db.close();
+                    resolve();
+                }, 0);
             });
         }
         catch (e) {
             reject(e);
         }
     });
+}
+
+
+async function decrypt (dbKey) {
+    await dbSession(dbKey, async db => {
+        await run(db, "PRAGMA cipher_migrate;");
+    });
+}
+
+async function getTableList (dbKey) {
+    let list = [];
+    await dbSession(dbKey, async db => {
+        list = await select(db, "select * from sqlite_master where type = 'table' order by name");
+    });
+    return list;
 }
 
 
@@ -104,14 +128,15 @@ async function main () {
         router.get("/api/table", async (ctx, next) => {
             try {
                 let dbKey = ctx.request.query.db;
-                let fileName = dbKey;
-                let filePath = `./uploads/${ fileName }.db`;
-                let pwd = dbKey.substring(0, 7);
+                let list = await getTableList(dbKey);
+                // let fileName = dbKey;
+                // let filePath = `./uploads/${ fileName }.db`;
+                // let pwd = dbKey.substring(0, 7);
 
-                let db = new Sqlite3.Database(filePath);
-                await run(db, `PRAGMA key = '${ pwd }';`);
-                let list = await getTableList(db);
-                db.close();
+                // let db = new Sqlite3.Database(filePath);
+                // await run(db, `PRAGMA key = '${ pwd }';`);
+                // let list = await getTableList(db);
+                // db.close();
 
                 let code = 200;
                 ctx.status = code;
@@ -150,9 +175,7 @@ async function main () {
             const stream = fs.createWriteStream(filePath);
             reader.pipe(stream);
 
-            let db = new Sqlite3.Database(filePath);
-            await decrypt(db, pwd);
-            db.close();
+            await decrypt(fileName);
 
             let code = 200;
             ctx.status = code;
@@ -192,3 +215,8 @@ async function main () {
 main();
 
 // db.close();
+
+// dbSession("eea9ad91543196187103", async db => {
+//     let list = await select(db, "select * from message limit 1;");
+//     console.log(list);
+// });
