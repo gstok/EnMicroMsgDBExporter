@@ -25,3 +25,4 @@ yarn run server
 ```
 yarn run website
 ```
+### 交流QQ群：943928860（node，python，vue，数据可视化，ai等等）
