@@ -238,9 +238,39 @@ async function main () {
             
         });
 
-        router.get("/api/export", async (ctx, next) => {
-            let zipPath = await exportJSON("eea9ad91543310727622", ["message", "userinfo", "userinfo2"]);
-            await KoaSend(ctx, zipPath);
+        router.post("/api/export", async (ctx, next) => {
+            let dbKey = ctx.request.body.db;
+            let exportType = ctx.request.body.type.toUpperCase();
+            let tableNameList = ctx.request.body.names;
+            let zipPath = "";
+            if (exportType == "JSON") {
+                zipPath = await exportJSON(dbKey, tableNameList);
+            }
+            else if (exportType == "SQL") {
+
+            }
+            else if (exportType == "EXCEL") {
+
+            }
+            let code = 200;
+            ctx.status = code;
+            ctx.body = {
+                code: code,
+                data: zipPath,
+                msg: "导出成功",
+            };     
+        });
+
+        router.get("/download/:db/:type", async (ctx, next) => {
+            let dbKey = ctx.params.db;
+            let exportType = ctx.params.type;
+            let fileName = `${ exportType.toUpperCase() }.zip`;
+            let filePath = `/Users/jimao/Desktop/EnMicroMsgDBExporter/temp/${ dbKey }/${ exportType.toUpperCase() }`;
+            let downloadName = `${ exportType.toLowerCase() }${ Number(new Date()) }.zip`;
+            ctx.attachment(downloadName);
+            await KoaSend(ctx, fileName, {
+                root: filePath,
+            });
         });
 
         app

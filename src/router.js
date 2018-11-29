@@ -28,9 +28,9 @@ export default new Router({
             component: () => import("./views/type"),
         },
         {
-            path: "/export",
-            name: "viewExport",
-            component: () => import("./views/export"),
+            path: "/download",
+            name: "viewDownload",
+            component: () => import("./views/download"),
         },
     ]
 })

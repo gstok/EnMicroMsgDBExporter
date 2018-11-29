@@ -1,7 +1,7 @@
 
 <!--局部样式-->
 <style scoped>
-    .viewExport {
+    .viewDownload {
 
     }
 </style>
@@ -12,13 +12,13 @@
 </style>
 
 <template>
-    <div class="viewExport">
+    <div class="viewDownload">
     </div>
 </template>
 
 <script>
     export default {
-        name: "viewExport",
+        name: "viewDownload",
         props: {
 
         },
@@ -67,7 +67,9 @@
             //#endregion
         },
         created () {
-
+            BUS.on("next", () => {
+                console.log(123);
+            });
         },
         mounted () {
 

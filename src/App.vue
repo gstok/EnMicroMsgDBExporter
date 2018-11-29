@@ -81,7 +81,7 @@
             </a>
         </el-header>
         <el-main class="myMain">
-            <el-steps :active="1">
+            <el-steps :active="activeStep">
                 <el-step title="填写解密信息" description="填写IMEI以及微信UIN"></el-step>
                 <el-step title="上传数据库" description="上传未解密的EnMicroMsg.db"></el-step>
                 <el-step title="选择导出表" description="选择需要导出的数据库表"></el-step>
@@ -109,6 +109,7 @@
                 //#endregion
 
                 //#region 页面内容绑定数据
+                    activeStep: 1,
                 //#endregion
 
                 //#region 页面样式绑定数据
@@ -116,7 +117,7 @@
             };
         },
         watch: {
-
+            "$route": "handleRouteChange",
         },
         computed: {
             //#region 常量计算属性
@@ -136,6 +137,25 @@
 
                 handleNextClick () {
                     BUS.emit("next");
+                },
+
+                handleRouteChange (nv) {
+                    let name = nv.name;
+                    if (name == "viewInput") {
+                        this.activeStep = 1;
+                    }
+                    else if (name == "viewUpload") {
+                        this.activeStep = 2;
+                    }
+                    else if (name == "viewTable") {
+                        this.activeStep = 3;
+                    }
+                    else if (name == "viewType") {
+                        this.activeStep = 4;
+                    }
+                    else if (name == "viewExport") {
+                        this.activeStep = 5;
+                    }
                 },
             //#endregion
 
