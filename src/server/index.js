@@ -12,6 +12,7 @@ const fs = require("fs");
 const UUID = require("uuid/v4");
 const Archiver = require("archiver");
 const stream = require("stream");
+const Xlsx = require("node-xlsx");
 
 
 
@@ -109,31 +110,34 @@ function dbSession(dbKey, session = () => { }) {
     });
 }
 
-async function exportJSON (dbKey, tableNameList) {
-
+//导出前准备导出目录
+function prepareExportDir (dbKey, type) {
     let tempPath = `./temp/${ dbKey }`;
     let result = fs.existsSync(tempPath);
     if (!result) {
         fs.mkdirSync(tempPath);
     }
-
-    let tempJSONPath = `./temp/${ dbKey }/JSON`;
-    result = fs.existsSync(tempJSONPath);
+    let tempExportPath = `./temp/${ dbKey }/${ type.toUpperCase() }`;
+    result = fs.existsSync(tempExportPath);
     if (!result) {
-        fs.mkdirSync(tempJSONPath);
+        fs.mkdirSync(tempExportPath);
     }
-
-    let files = fs.readdirSync(tempJSONPath);
+    let files = fs.readdirSync(tempExportPath);
     files.forEach(fileName => {
-        fs.unlinkSync(`${ tempJSONPath }/${ fileName }`);
+        fs.unlinkSync(`${ tempExportPath }/${ fileName }`);
     });
+    return tempExportPath;
+}
+
+async function exportJSON (dbKey, tableNameList) {
+    let tempExportPath = prepareExportDir(dbKey, "json");
 
     await dbSession(dbKey, async db => {
         for (let i = 0; i < tableNameList.length; ++i) {
             let name = tableNameList[i];
             let list = await select(db, `select * from ${ name }`);
             let jsonStr = JSON.stringify(list, null, 4);
-            fs.writeFileSync(`${ tempJSONPath }/${ name }.json`, jsonStr);
+            fs.writeFileSync(`${ tempExportPath }/${ name }.json`, jsonStr);
         }
     });
 
@@ -142,12 +146,36 @@ async function exportJSON (dbKey, tableNameList) {
             level: 9
         },
     });
-    archive.directory(tempJSONPath, false);
-    let zipPath = `${ tempJSONPath }/JSON.zip`;
+    archive.directory(tempExportPath, false);
+    let zipPath = `${ tempExportPath }/JSON.zip`;
     let output = fs.createWriteStream(zipPath);
     archive.pipe(output);
     archive.finalize();
     return zipPath;
+}
+
+async function exportExcel (dbKey, tableNameList) {
+    let tempExportPath = prepareExportDir(dbKey, "excel");
+    await dbSession(dbKey, async db => {
+        for (let i = 0; i < tableNameList.length; ++i) {
+            let name = tableNameList[i];
+            let list = await select(db, `select * from ${ name }`);
+            let result = list.map(item => Object.values(item));
+            let excelBuffer = Xlsx.build([
+                { data: result }
+            ]);
+            fs.writeFileSync(`${ tempExportPath }/${ name }.xlsx`, excelBuffer);
+        }
+    });
+    return "";
+}
+
+async function exportSQL (dbKey, tableNameList) {
+
+}
+
+async function exportCSV (dbKey, tableNameList) {
+    
 }
 
 async function decrypt (dbKey) {
@@ -250,7 +278,7 @@ async function main () {
 
             }
             else if (exportType == "EXCEL") {
-
+                zipPath = await exportExcel(dbKey, tableNameList);
             }
             let code = 200;
             ctx.status = code;
@@ -293,11 +321,20 @@ async function main () {
     }
 }
 
+
+// const data = [
+//     [1, 2, 3], 
+//     [true, false, null, 'sheetjs'], 
+//     ['foo', 'bar', new Date('2014-02-19T14:30Z'), '0.3'], 
+//     ['baz', null, 'qux']
+// ];
+// var buffer = Xlsx.build([
+//     {name: "mySheetName", data: data}
+// ]); // Returns a buffer
+
+// console.log(buffer);
+// fs.writeFileSync("1.xlsx", buffer);
+
 main();
 
 // db.close();
-
-// dbSession("eea9ad91543196187103", async db => {
-//     let list = await select(db, "select * from message limit 1;");
-//     console.log(list);
-// });

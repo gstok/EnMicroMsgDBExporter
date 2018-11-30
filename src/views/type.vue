@@ -19,6 +19,7 @@
         <el-select v-model="type" placeholder="请选择导出类型">
             <el-option label="Excel" value="EXCEL"></el-option>
             <el-option label="SQL" value="SQL"></el-option>
+            <el-option label="CSV" value="CSV"></el-option>
             <el-option label="JSON" value="JSON"></el-option>
         </el-select>
     </div>
