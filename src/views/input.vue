@@ -79,7 +79,21 @@
                 },
 
                 handleNextClick () {
-                    this.$router.push(`/upload?pwd=${ this.autoKey }`);
+                    if (this.imei.trim() == "") {
+                        this.$message({
+                            type: "warning",
+                            message: "请填写手机IMEI！",
+                        });
+                    }
+                    if (this.uin.trim() == "") {
+                        this.$message({
+                            type: "warning",
+                            message: "请填写微信UIN！",
+                        });
+                    }
+                    else {
+                        this.$router.push(`/upload?pwd=${ this.autoKey }`);
+                    }
                 },
             //#endregion
 

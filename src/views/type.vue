@@ -1,4 +1,5 @@
 
+import { constants } from 'http2';
 <!--局部样式-->
 <style scoped>
     .viewType {
@@ -18,8 +19,8 @@
         <label>导出类型：</label>
         <el-select v-model="type" placeholder="请选择导出类型">
             <el-option label="Excel" value="EXCEL"></el-option>
-            <el-option label="SQL" value="SQL"></el-option>
-            <el-option label="CSV" value="CSV"></el-option>
+            <!-- <el-option label="SQL" value="SQL"></el-option>
+            <el-option label="CSV" value="CSV"></el-option> -->
             <el-option label="JSON" value="JSON"></el-option>
         </el-select>
     </div>
@@ -64,6 +65,10 @@
                 handleExportDB () {
                     this.b_exportDB();
                 },
+
+                handleBackClick () {
+                    this.$router.push(`/table?db=${ this.dbKey }`);
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -79,11 +84,16 @@
                         };
                         let result = await this.i_exportDB(params);
                         if (result) {
-                            console.log(result);
+                            this.$message({
+                                type: "success",
+                                message: "导出成功！",
+                            });
+                            localStorage.download = result;
+                            this.$router.push(`/download?db=${ this.dbKey }`);
                         }
                     }
                     catch (e) {
-                        console.errror(e);
+                        console.error(e);
                     }
                     this.loading = false;
                 },
@@ -93,7 +103,7 @@
                 async i_exportDB (params) {
                     let reqUrl = "/api/export";
                     let response = await this.$post(reqUrl, params);
-                    if (response.success) {
+                    if (response.code == 200) {
                         return response.data;
                     }
                     else {
@@ -113,6 +123,7 @@
         },
         created () {
             this.dbKey = this.$route.query.db;
+            BUS.on("back", this.handleBackClick);
             BUS.on("next", this.handleExportDB);
         },
         mounted () {

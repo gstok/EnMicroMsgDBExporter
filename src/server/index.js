@@ -126,12 +126,45 @@ function prepareExportDir (dbKey, type) {
     files.forEach(fileName => {
         fs.unlinkSync(`${ tempExportPath }/${ fileName }`);
     });
-    return tempExportPath;
+    return tempPath;
 }
 
-async function exportJSON (dbKey, tableNameList) {
-    let tempExportPath = prepareExportDir(dbKey, "json");
+//压缩打包文件夹
+function compressDir (dirPath, zipPath) {
+    return new Promise((resolve, reject) => {
+        let output = fs.createWriteStream(zipPath);
+        let archive = Archiver("zip", {
+            zlib: {
+                level: 9
+            },
+        });
+        output.on("close", () => {
+            resolve();
+        });
+        output.on("end", () => { });
+        archive.on("warning", err => {
+            if (err.code == "ENOENT") {
+                console.log(err);
+            }
+            else {
+                reject(err);
+            }
+        });
+        archive.on("error", err => {
+            reject(err);
+        });
+        archive.pipe(output);
+        archive.directory(dirPath, false);
+        archive.finalize();
+    });
+}
 
+//导出JSON格式数据
+async function exportJSON (dbKey, tableNameList) {
+    let type = "JSON";
+    type = type.toUpperCase();
+    let tempPath = prepareExportDir(dbKey, type);
+    let tempExportPath = `${ tempPath }/${ type }`;
     await dbSession(dbKey, async db => {
         for (let i = 0; i < tableNameList.length; ++i) {
             let name = tableNameList[i];
@@ -140,22 +173,18 @@ async function exportJSON (dbKey, tableNameList) {
             fs.writeFileSync(`${ tempExportPath }/${ name }.json`, jsonStr);
         }
     });
-
-    let archive = Archiver("zip", {
-        zlib: {
-            level: 9
-        },
-    });
-    archive.directory(tempExportPath, false);
-    let zipPath = `${ tempExportPath }/JSON.zip`;
-    let output = fs.createWriteStream(zipPath);
-    archive.pipe(output);
-    archive.finalize();
-    return zipPath;
+    let downloadFileName = `${ type }${ Number(new Date()) }.zip`;
+    let tempDownloadPath = `${ tempPath }/${ downloadFileName }`;
+    await compressDir(tempExportPath, tempDownloadPath);
+    return downloadFileName;
 }
 
+//导出EXCEL格式数据
 async function exportExcel (dbKey, tableNameList) {
-    let tempExportPath = prepareExportDir(dbKey, "excel");
+    let type = "EXCEL";
+    type = type.toUpperCase();
+    let tempPath = prepareExportDir(dbKey, type);
+    let tempExportPath = `${ tempPath }/${ type }`;
     await dbSession(dbKey, async db => {
         for (let i = 0; i < tableNameList.length; ++i) {
             let name = tableNameList[i];
@@ -167,15 +196,10 @@ async function exportExcel (dbKey, tableNameList) {
             fs.writeFileSync(`${ tempExportPath }/${ name }.xlsx`, excelBuffer);
         }
     });
-    return "";
-}
-
-async function exportSQL (dbKey, tableNameList) {
-
-}
-
-async function exportCSV (dbKey, tableNameList) {
-    
+    let downloadFileName = `${ type }${ Number(new Date()) }.zip`;
+    let tempDownloadPath = `${ tempPath }/${ downloadFileName }`;
+    await compressDir(tempExportPath, tempDownloadPath);
+    return downloadFileName;
 }
 
 async function decrypt (dbKey) {
@@ -203,15 +227,6 @@ async function main () {
             try {
                 let dbKey = ctx.request.query.db;
                 let list = await getTableList(dbKey);
-                // let fileName = dbKey;
-                // let filePath = `./uploads/${ fileName }.db`;
-                // let pwd = dbKey.substring(0, 7);
-
-                // let db = new Sqlite3.Database(filePath);
-                // await run(db, `PRAGMA key = '${ pwd }';`);
-                // let list = await getTableList(db);
-                // db.close();
-
                 let code = 200;
                 ctx.status = code;
                 ctx.body = {
@@ -270,32 +285,27 @@ async function main () {
             let dbKey = ctx.request.body.db;
             let exportType = ctx.request.body.type.toUpperCase();
             let tableNameList = ctx.request.body.names;
-            let zipPath = "";
+            let fileName = "";
             if (exportType == "JSON") {
-                zipPath = await exportJSON(dbKey, tableNameList);
-            }
-            else if (exportType == "SQL") {
-
+                fileName = await exportJSON(dbKey, tableNameList);
             }
             else if (exportType == "EXCEL") {
-                zipPath = await exportExcel(dbKey, tableNameList);
+                fileName = await exportExcel(dbKey, tableNameList);
             }
             let code = 200;
             ctx.status = code;
             ctx.body = {
                 code: code,
-                data: zipPath,
+                data: fileName,
                 msg: "导出成功",
             };     
         });
 
-        router.get("/download/:db/:type", async (ctx, next) => {
+        router.get("/resources/:db/:name", async (ctx, next) => {
             let dbKey = ctx.params.db;
-            let exportType = ctx.params.type;
-            let fileName = `${ exportType.toUpperCase() }.zip`;
-            let filePath = `/Users/jimao/Desktop/EnMicroMsgDBExporter/temp/${ dbKey }/${ exportType.toUpperCase() }`;
-            let downloadName = `${ exportType.toLowerCase() }${ Number(new Date()) }.zip`;
-            ctx.attachment(downloadName);
+            let fileName = ctx.params.name;
+            let filePath = `/Users/jimao/Desktop/EnMicroMsgDBExporter/temp/${ dbKey }`;
+            ctx.attachment(fileName);
             await KoaSend(ctx, fileName, {
                 root: filePath,
             });
@@ -338,3 +348,6 @@ async function main () {
 main();
 
 // db.close();
+
+
+

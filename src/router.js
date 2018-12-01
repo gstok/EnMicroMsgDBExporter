@@ -8,6 +8,11 @@ export default new Router({
     base: process.env.BASE_URL,
     routes: [
         {
+            path: "/",
+            name: "viewWelcome",
+            component: () => import("./views/welcome"),
+        },
+        {
             path: "/input",
             name: "viewInput",
             component: () => import("./views/input"),

@@ -76,6 +76,10 @@
                         }
                     }
                 },
+                
+                handleBackClick () {
+                    this.$router.push(`/input`);
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -95,6 +99,8 @@
         },
         created () {
             this.pwd = this.$route.query.pwd;
+            BUS.on("back", this.handleBackClick);
+            BUS.on("next", this.handleNextClick);
         },
         mounted () {
 

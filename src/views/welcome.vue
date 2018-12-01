@@ -1,28 +1,12 @@
 
+import { setTimeout } from 'timers';
 <!--局部样式-->
 <style scoped>
-    .viewDownload {
+    .viewWelcome {
         display: flex;
         justify-content: center;
         align-items: center;
-    }
-
-    .download {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-decoration: none;
-    }
-
-    .download img {
-        width: 128px;
-        height: 128px;
-    }
-
-    .download span {
-        font-size: 12px;
-        color: #409EFF;
+        font-size: 32px;
     }
 </style>
 
@@ -32,17 +16,14 @@
 </style>
 
 <template>
-    <div class="viewDownload">
-        <a class="download" :href="`/resources/${ dbKey }/${ fileName }`">
-            <img src="../assets/images/zip.png" />
-            <span>点此下载导出数据</span>
-        </a>
+    <div class="viewWelcome">
+        <span>欢迎使用微信数据库导出工具</span>
     </div>
 </template>
 
 <script>
     export default {
-        name: "viewDownload",
+        name: "viewWelcome",
         props: {
 
         },
@@ -52,8 +33,6 @@
                 //#endregion
 
                 //#region 页面内容绑定数据
-                    dbKey: "",
-                    fileName: "",
                 //#endregion
 
                 //#region 页面样式绑定数据
@@ -75,9 +54,6 @@
         },
         methods: {
             //#region 页面事件方法
-                handleBackClick () {
-                    this.$router.push(`/type?db=${ this.dbKey }`);
-                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -96,12 +72,12 @@
             //#endregion
         },
         created () {
-            this.dbKey = this.$route.query.db;
-            this.fileName = localStorage.download;
-            BUS.on("back", this.handleBackClick);
+
         },
         mounted () {
-
+            setTimeout(() => {
+                this.$router.push(`/input`);
+            }, 1500);
         },
         components: {
 

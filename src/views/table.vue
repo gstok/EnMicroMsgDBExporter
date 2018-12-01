@@ -142,6 +142,10 @@
                         this.checkAll = false;
                     }
                 },
+
+                handleBackClick () {
+                    this.$router.push(`/upload?pwd=${ this.dbKey.substring(0, 7) }`);
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -200,6 +204,7 @@
         created () {
             this.dbKey = this.$route.query.db;
             this.b_updateTableList();
+            BUS.on("back", this.handleBackClick);
             BUS.on("next", () => {
                 localStorage.setItem(this.dbKey, JSON.stringify(this.autoExportTablesName));
                 this.$router.push(`/type?db=${ this.dbKey }`);

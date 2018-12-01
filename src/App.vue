@@ -82,16 +82,16 @@
         </el-header>
         <el-main class="myMain">
             <el-steps :active="activeStep">
-                <el-step title="填写解密信息" description="填写IMEI以及微信UIN"></el-step>
+                <el-step title="准备" description="填写IMEI以及微信UIN"></el-step>
                 <el-step title="上传数据库" description="上传未解密的EnMicroMsg.db"></el-step>
                 <el-step title="选择导出表" description="选择需要导出的数据库表"></el-step>
-                <el-step title="选择导出格式" description="选择导出格式"></el-step>
-                <el-step title="导出完成" description="导出完成，浏览器将自动下载导出文件"></el-step>
+                <el-step title="导出" description="请选择导出格式"></el-step>
+                <el-step title="下载" description="点击图标下载导出数据"></el-step>
             </el-steps>
             <router-view></router-view>
             <div class="buttonWarp">
-                <el-button @click="handleBackClick">上一步</el-button>
-                <el-button @click="handleNextClick">下一步</el-button>
+                <el-button :disabled="activeStep == 1" type="primary" @click="handleBackClick">上一步</el-button>
+                <el-button :disabled="activeStep == 5" type="primary" @click="handleNextClick">下一步</el-button>
             </div>
         </el-main>
     </el-container>
@@ -153,7 +153,7 @@
                     else if (name == "viewType") {
                         this.activeStep = 4;
                     }
-                    else if (name == "viewExport") {
+                    else if (name == "viewDownload") {
                         this.activeStep = 5;
                     }
                 },
