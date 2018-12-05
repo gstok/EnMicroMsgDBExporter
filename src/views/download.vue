@@ -33,7 +33,7 @@
 
 <template>
     <div class="viewDownload">
-        <a class="download" :href="`/resources/${ dbKey }/${ fileName }`">
+        <a class="download" :href="`/resource/${ dbKey }/${ fileName }`">
             <img src="../assets/images/zip.png" />
             <span>点此下载导出数据</span>
         </a>

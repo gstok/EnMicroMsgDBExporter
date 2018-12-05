@@ -21,7 +21,7 @@ module.exports = {
                 changeOrigin: true,
                 secure: false,
             },
-            '/resources': {
+            '/resource': {
                 target: 'http://localhost:10241/',
                 changeOrigin: true,
                 secure: false,

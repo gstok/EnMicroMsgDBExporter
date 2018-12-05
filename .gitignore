@@ -1,6 +1,12 @@
 .DS_Store
 node_modules
 /dist
+/wechat.db
+/wechat.db-shm
+/wechat.db-wal
+/upload
+/public
+/temp
 
 # local env files
 .env.local
