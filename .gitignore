@@ -6,7 +6,7 @@ node_modules
 /wechat.db-wal
 /upload
 /public
-/temp
+/export
 
 # local env files
 .env.local
