@@ -125,6 +125,11 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
         });
         return list;
     }
+    //获取某个表的所有列名
+    async function getTableColumns (db, tableName) {
+        let columns = await select(db, `PRAGMA table_info('${ tableName }')`);
+        return columns.map(item => item.name);
+    }
     //压缩文件夹
     function compressDir (dirPath, zipPath) {
         return new Promise((resolve, reject) => {
@@ -205,8 +210,10 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
         await dbSession(dbKey, async db => {
             for (let i = 0; i < tableNameList.length; ++i) {
                 let name = tableNameList[i];
-                let list = await select(db, `select * from ${ name }`);
-                let result = list.map(item => Object.values(item));
+                let headers = await getTableColumns(db, name);
+                let list = await select(db, `select ${ headers.join(",") } from ${ name }`);
+                let result = [ headers ];
+                result = result.concat(list.map(item => Object.values(item)));
                 let excelBuffer = Xlsx.build([
                     { data: result }
                 ]);
@@ -317,7 +324,7 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
             console.log(`服务已经启动，工作在 ${ serverPort } 端口...`.green);
         }
         catch (e) {
-            console.error("服务启动失败".red);
+            console.error("服务启动失败，程序已退出".red);
             console.error(e.message);
         }
     }
