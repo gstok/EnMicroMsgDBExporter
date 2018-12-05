@@ -54,15 +54,22 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
                 let dbPath = `./upload/${ dbName }.db`;
                 let db = new Sqlite3.Database(dbPath);
                 db.serialize(async () => {
-                    await run(db, `PRAGMA key = '${ dbPwd }';`);
-                    await session(db);
-                    setTimeout(() => {
+                    try {
+                        await run(db, `PRAGMA key = '${ dbPwd }';`);
+                        await session(db);
+                        setTimeout(() => {
+                            db.close();
+                            resolve();
+                        }, 0);
+                    }
+                    catch (e) {
                         db.close();
-                        resolve();
-                    }, 0);
+                        reject(e);
+                    }
                 });
             }
             catch (e) {
+                db.close();
                 reject(e);
             }
         });
@@ -118,24 +125,6 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
         });
         return list;
     }
-    //准备导出目录
-    function prepareExportDir (dbKey, type) {
-        let tempPath = `./temp/${ dbKey }`;
-        let result = fs.existsSync(tempPath);
-        if (!result) {
-            fs.mkdirSync(tempPath);
-        }
-        let tempExportPath = `./temp/${ dbKey }/${ type.toUpperCase() }`;
-        result = fs.existsSync(tempExportPath);
-        if (!result) {
-            fs.mkdirSync(tempExportPath);
-        }
-        let files = fs.readdirSync(tempExportPath);
-        files.forEach(fileName => {
-            fs.unlinkSync(`${ tempExportPath }/${ fileName }`);
-        });
-        return tempPath;
-    }
     //压缩文件夹
     function compressDir (dirPath, zipPath) {
         return new Promise((resolve, reject) => {
@@ -169,6 +158,24 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
                 reject(e);
             }
         });
+    }
+    //准备导出目录
+    function prepareExportDir (dbKey, type) {
+        let tempPath = `./export/${ dbKey }`;
+        let result = fs.existsSync(tempPath);
+        if (!result) {
+            fs.mkdirSync(tempPath);
+        }
+        let tempExportPath = `./export/${ dbKey }/${ type.toUpperCase() }`;
+        result = fs.existsSync(tempExportPath);
+        if (!result) {
+            fs.mkdirSync(tempExportPath);
+        }
+        let files = fs.readdirSync(tempExportPath);
+        files.forEach(fileName => {
+            fs.unlinkSync(`${ tempExportPath }/${ fileName }`);
+        });
+        return tempPath;
     }
     //导出JSON格式数据
     async function exportJSON (dbKey, tableNameList) {
@@ -216,23 +223,24 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
 //#region 控制器方法
     //数据库上传控制器
     async function uploadControler (ctx, next) {
-        let pwd = ctx.request.body.pwd;
-        let file = ctx.request.files.file;
-
-        let fileName = `${ pwd }${ Number(new Date()) }`;
-        let filePath = `./upload/${ fileName }.db`;
-        
-        let reader = fs.createReadStream(file.path);
-        let stream = fs.createWriteStream(filePath);
-        reader.pipe(stream);
-
-        await migrateDB(fileName);
-
-        hold200(ctx, {
-            dbkey: fileName,
-        });
+        try {
+            let pwd = ctx.request.body.pwd;
+            let file = ctx.request.files.file;
+            let fileName = `${ pwd }${ Number(new Date()) }`;
+            let filePath = `./upload/${ fileName }.db`;
+            let reader = fs.createReadStream(file.path);
+            let stream = fs.createWriteStream(filePath);
+            reader.pipe(stream);
+            await migrateDB(fileName);
+            hold200(ctx, {
+                dbkey: fileName,
+            });
+        }
+        catch (e) {
+            console.error(e.message);
+            hold500(ctx, e.message);
+        }
     }
-
     //获取表控制器
     async function tablesControler (ctx, next) {
         try {
@@ -245,34 +253,32 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
             hold500(ctx, e.message);
         }
     }
-
     //导出数据控制器
     async function exportControler (ctx, next) {
-        let dbKey = ctx.request.body.db;
-        let exportType = ctx.request.body.type.toUpperCase();
-        let tableNameList = ctx.request.body.names;
-        let fileName = "";
-        if (exportType == "JSON") {
-            fileName = await exportJSON(dbKey, tableNameList);
+        try {
+            let dbKey = ctx.request.body.db;
+            let exportType = ctx.request.body.type.toUpperCase();
+            let tableNameList = ctx.request.body.names;
+            let fileName = "";
+            if (exportType == "JSON") {
+                fileName = await exportJSON(dbKey, tableNameList);
+            }
+            else if (exportType == "EXCEL") {
+                fileName = await exportExcel(dbKey, tableNameList);
+            }
+            hold200(ctx, fileName, "导出成功");
         }
-        else if (exportType == "EXCEL") {
-            fileName = await exportExcel(dbKey, tableNameList);
+        catch (e) {
+            console.error(e.message);
+            hold500(ctx, e.message);
         }
-        let code = 200;
-        ctx.status = code;
-        ctx.body = {
-            code: code,
-            data: fileName,
-            msg: "导出成功",
-        };  
     }
-
     //下载导出结果控制器
     async function downloadControler (ctx, next) {
         try {
             let dbKey = ctx.params.db;
             let fileName = ctx.params.name;
-            let filePath = path.join(__dirname, "../..", "temp", dbKey);
+            let filePath = path.join(__dirname, "../..", "export", dbKey);
             ctx.attachment(fileName);
             await KoaSend(ctx, fileName, {
                 root: filePath,
@@ -311,6 +317,7 @@ const maxUploadFileSize = 1024 * 1024 * 1024;
             console.log(`服务已经启动，工作在 ${ serverPort } 端口...`.green);
         }
         catch (e) {
+            console.error("服务启动失败".red);
             console.error(e.message);
         }
     }
