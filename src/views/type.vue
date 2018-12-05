@@ -123,8 +123,16 @@ import { constants } from 'http2';
         },
         created () {
             this.dbKey = this.$route.query.db;
-            BUS.on("back", this.handleBackClick);
-            BUS.on("next", this.handleExportDB);
+            BUS.on("back", () => {
+                if (this.$route.name == "viewType") {
+                    this.handleBackClick();
+                }
+            });
+            BUS.on("next", () => {
+                if (this.$route.name == "viewType") {
+                    this.handleExportDB();
+                }
+            });
         },
         mounted () {
 

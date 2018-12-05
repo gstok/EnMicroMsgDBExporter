@@ -16,8 +16,9 @@
     }
 
     .download img {
-        width: 128px;
-        height: 128px;
+        width: 80px;
+        height: 80px;
+        margin-bottom: 8px;
     }
 
     .download span {
@@ -61,7 +62,7 @@
             };
         },
         watch: {
-
+            "$route": "handleRouteChange",
         },
         computed: {
             //#region 常量计算属性
@@ -77,6 +78,11 @@
             //#region 页面事件方法
                 handleBackClick () {
                     this.$router.push(`/type?db=${ this.dbKey }`);
+                },
+
+                handleRouteChange (nv) {
+                    this.dbKey = this.$route.query.db;
+                    this.fileName = localStorage.download;
                 },
             //#endregion
 
@@ -98,7 +104,11 @@
         created () {
             this.dbKey = this.$route.query.db;
             this.fileName = localStorage.download;
-            BUS.on("back", this.handleBackClick);
+            BUS.on("back", () => {
+                if (this.$route.name == "viewDownload") {
+                    this.handleBackClick();
+                }
+            });
         },
         mounted () {
 

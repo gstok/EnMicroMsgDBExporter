@@ -80,6 +80,10 @@
                 handleBackClick () {
                     this.$router.push(`/input`);
                 },
+
+                handleNextClick () {
+
+                },
             //#endregion
 
             //#region 业务逻辑方法
@@ -98,12 +102,20 @@
             //#endregion
         },
         created () {
-            this.pwd = this.$route.query.pwd;
-            BUS.on("back", this.handleBackClick);
-            BUS.on("next", this.handleNextClick);
+
         },
         mounted () {
-
+            this.pwd = this.$route.query.pwd;
+            BUS.on("back", () => {
+                if (this.$route.name == "viewUpload") {
+                    this.handleBackClick();
+                }
+            });
+            BUS.on("next", () => {
+                if (this.$route.name == "viewUpload") {
+                    this.handleNextClick();
+                }
+            });
         },
         components: {
 

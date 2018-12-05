@@ -23,10 +23,10 @@
             label-position="top"
             label-width="80px">
             <el-form-item label="IMEI号">
-                <el-input v-model="imei" placeholder="请输入手机IMEI号"></el-input>
+                <el-input v-model="imei" placeholder="请输入手机IMEI号" clearable></el-input>
             </el-form-item>
             <el-form-item label="微信UIN">
-                <el-input v-model="uin" placeholder="请输入微信UIN"></el-input>
+                <el-input v-model="uin" placeholder="请输入微信UIN" clearable></el-input>
             </el-form-item>
         </el-form>
     </div>
@@ -74,22 +74,20 @@
         },
         methods: {
             //#region 页面事件方法
-                handleBackClick () {
-
-                },
-
                 handleNextClick () {
                     if (this.imei.trim() == "") {
                         this.$message({
                             type: "warning",
                             message: "请填写手机IMEI！",
                         });
+                        return;
                     }
                     if (this.uin.trim() == "") {
                         this.$message({
                             type: "warning",
                             message: "请填写微信UIN！",
                         });
+                        return;
                     }
                     else {
                         this.$router.push(`/upload?pwd=${ this.autoKey }`);
@@ -113,11 +111,14 @@
             //#endregion
         },
         created () {
-
+            BUS.on("next",() => {
+                if (this.$route.name == "viewInput") {
+                    this.handleNextClick();
+                }
+            });
         },
         mounted () {
-            BUS.on("back", this.handleBackClick);
-            BUS.on("next", this.handleNextClick);
+
         },
         components: {
 

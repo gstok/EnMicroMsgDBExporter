@@ -204,10 +204,16 @@
         created () {
             this.dbKey = this.$route.query.db;
             this.b_updateTableList();
-            BUS.on("back", this.handleBackClick);
+            BUS.on("back", () => {
+                if (this.$route.name == "viewTable") {
+                    this.handleBackClick();
+                }
+            });
             BUS.on("next", () => {
-                localStorage.setItem(this.dbKey, JSON.stringify(this.autoExportTablesName));
-                this.$router.push(`/type?db=${ this.dbKey }`);
+                if (this.$route.name == "viewTable") {
+                    localStorage.setItem(this.dbKey, JSON.stringify(this.autoExportTablesName));
+                    this.$router.push(`/type?db=${ this.dbKey }`);
+                }
             });
         },
         mounted () {

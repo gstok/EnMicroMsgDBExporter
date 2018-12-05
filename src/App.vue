@@ -88,10 +88,12 @@
                 <el-step title="导出" description="请选择导出格式"></el-step>
                 <el-step title="下载" description="点击图标下载导出数据"></el-step>
             </el-steps>
-            <router-view></router-view>
+            <keep-alive>
+                <router-view></router-view>
+            </keep-alive>
             <div class="buttonWarp">
                 <el-button :disabled="activeStep == 1" type="primary" @click="handleBackClick">上一步</el-button>
-                <el-button :disabled="activeStep == 5" type="primary" @click="handleNextClick">下一步</el-button>
+                <el-button :disabled="activeStep == 5 || activeStep == 2" type="primary" @click="handleNextClick">下一步</el-button>
             </div>
         </el-main>
     </el-container>
