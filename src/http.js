@@ -2,8 +2,8 @@
 import axios from "axios";
 import { Message } from "element-ui";
 
-axios.defaults.timeout = 50000;
-axios.defaults.baseURL = '';
+axios.defaults.timeout = 120000;
+axios.defaults.baseURL = "";
 
 //弹出错误信息
 function showError (msg) {
@@ -21,13 +21,13 @@ function http (config) {
                 // 需要跳转
             }
             else if (response.status === 403) {
-                // iView.Message.error('权限不足，禁止访问！');
+                // 权限错误
             }
             else if (response.status === 500) {
-
+                // 服务器错误
             }
             else if (response.status !== 200) {
-                // iView.Message.error(response.data.msg);
+                // 其他错误
             }
 
             if (response.status == 200 &&
